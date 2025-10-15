@@ -107,9 +107,23 @@
             console.log(utente.verificaPassword("1234")) // false
     ```
 
-    ■ Here the password is controlled by closure - it cannot be accessed directly, only manipulated through internal functions
+    ■ Here the password is controlled by 
+    
+  ○ Practical Example 3: Function that uses an outer variable as the parameter for the inner one
 
-  ○ Concepot Summary
+```js
+  function outerFunction(outerVariable) {
+    return function innerFunction(innerVariable) {
+      console.log("Outer variable: " + outerVariable);
+      console.log("Inner variable: " + innerVariable);
+    };
+  }
+
+  const newFunction = outerFunction("outside");
+  newFunction("inner");
+```
+
+  ○ Concept Summary
 
     Concept                               Explanation
     Closure                               Function that remembers the scope where it was created
@@ -120,7 +134,81 @@
 
   ○ Do closures appear in hooks inside React? 
 
-    ■ 
+    ■ Closures are everywhere in React hooks, even if we don't always notice them. Here are some examples
+
+      1.
+
+      ```js
+      
+        function Counter() {
+          const [count, setCount] = useState(0)
+
+          function handleClick() {
+            console.log("Count is: ", count);
+            setCount(count + 1)
+          }
+        }
+
+        return <button onClick={handleClick}>Click me</button>
+      ```
+
+      □ Here's what happens
+
+        . When the component first renders, count is 0
+        . The handleClick closes over count = 0
+        . When we click, handleClick, it still remembers the old value it was created with
+
+        If react re-renders and defines a new handleClick, that new one closes over the new value of count.
+        That’s why it’s important to understand closures in hooks — they control what data each render’s functions remember.
+
+    ■ Common closure trap in hooks
+
+      □ Sometimes we see this issue
+
+        ```js
+          useEffect(() => {
+            const interval = setInterval(() => {
+              console.log(count);
+              setCount(count + 1)
+            }, 1000)
+
+            return () => clearInterval(interval)
+          }, [])
+        ```
+      
+        . Here, the effect runs only once because of [], and the callback inside the interval closes over the initial count(0)
+        So it keeps loggings 0 forever
+        That's a state closure problem, the function remembers an old value
+
+    ■ How to fix stale closures:
+
+      □ We can fix it by: 
+
+        1. including `count` in the dependency array. Now, every time count changes a new closure is created with the
+        latest value 
+        2. Or we can use functional update form, which doesn't rely in the old closure:
+     
+  ```js 
+      useEffect(() => {
+        const interval = setInterval(() => {
+          setCount(c => c + 1) // uses the latest state automatically
+        }, 1000)
+
+        return () => clearInterval(interval);
+      }, [])
+  ```
+
+      This works because React gives the latest value of c each time
+
+  ■ Summary:
+
+    □ React creates a new closure with current state/props on each render
+    □ hooks capture variables from that specific render
+    □ When a callback keeps an old version of state is called `Stale Closure`
+    □ We fix stale mates by adding dependencies or use functional state updates, like setters
+
+
+
 
     
 
