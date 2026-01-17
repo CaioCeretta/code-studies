@@ -29,22 +29,38 @@ Here we enter the "micro". They are the patterns that are used to write code ins
 model the business processes in classes or objects
 
 • Entities: Objects that have a **unique identity** that persist over time.
-Example: A client. Even if a client change its name or his address. The identifier remains the same
+
+It's worth to reinforce that two entities can have the same attributes, but if the id is different, they are different
+objects.
+Therefore, different from VOs, the equality of an entity is strictly based on its unique identifier, and not in its attributes
+(ex. Two clientes with the same name and CPF still are distinct entities if their ID is not the same).
+Example: A client. Even if a client change its name or his address. The identifier remains the same.
 
 • Value Objects: Objects defined only by their attributes, without an identity. **They are immutable.**
 Example: Address or Currency. If we change the street, we will have a new address, and not the same modified address
+
+• Agreggates: Aggregates consist of a group of objects (Entities and VOs) that are treated as a single unity to ensure
+data consistency. They usually have the "Root of an aggregate" (e.g. Course is the root of an aggregate that consist of
+chapters, lessons). Meaning that we never add a `Lesson` isolately, but also the `Course`.
+
+All changes within the aggregate must be treated as a single atomic operation to ensure business invariants are never
+broken.
+
+• Domain Services: When a business logic does not naturally belong to a single entity or VO, it becomes a service. Such as
+filtering multiple VOs by date
+
+• Repositories: They are used to fetch or save aggregates in the database, hiding technical complexity
 
 #### Value Objects
 
 Value objects are not simple "data buckets" (struct or DTO classes). But in DDD, they are a first class object, some reasons
 are:
 
-• 1 Self validation
+• 1 Self validation (Protecting Invariants)
 
-A object value is not simply used to store a data, but to ensure that the data is valid since its "birth" (instantiation)
-
-**Example:** If we have an `Email` VO, the business rules that if exist an `at (@)` and a `domain` must always be inside
-that VO constructor, and not spread around services or controllers. If the object exist, it is valid.
+A value object ensures that invariants, business rules that must always be true, are satisfied upon instantiation. For
+example, an `Email` without an @ symbol is just `invalid`, it is a violation of a domain invariant. By enforcing this in
+the constructor, we guarantee the system never handles a corrupted state.
 
 • 2. Behavior and Domain Logic
 
@@ -59,6 +75,10 @@ with the result.
 Instead of using a `String` for a CPF, we use the **type** `CPF`. This allows that the rule of "how to validate a CPF" or
 "how to format a CPF with a mask" be centralized and reside in only one place, instead of creating utility functions that
 are lost inside the project
+
+• Pure functions and Side-Effect-Free Functions: VOs are the perfect place for pure functions. Operations in VO are free
+of side effects. By summing two values, we get a new one, without the risk of accidentally modifying the original values
+in other parts of the app
 
 ### Practical Example
 
@@ -109,3 +129,9 @@ export class Address {
   }
 }
 ```
+
+### Why does it help?
+
+• **Encapsulation:** The logic of "What defines a valid adress" is protected
+• **Testability:** It is easier to unitarily test a VO, because it does not depend on DB or external services
+• **Ubiquitous Language**: The name of the VO`s method such as `International()` reflect how the expert would talk
