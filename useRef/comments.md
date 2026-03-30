@@ -60,3 +60,18 @@ the user experience, an such.
 Refs are interesting when we want to access directly DOM elements and call functions on those elements. We can also use
 it with third party libraries that create a ref and expose that ref along with some functions so we can access from
 anywhere those functions of inside of that component. Although this not usually one that we would write ourselves.
+
+
+## Summary
+
+Behind the scenes, react is basically keeping track of the Virtual DOM, and what is actually showing us.
+
+This is important because if we want access to the actual div in the DOM, we need to have some reference to that, rather
+than just connecting to the virtual DOM, and that's where useRef comes in handy.
+
+So for instance, let's use our code where we have an inputRef and a dialogRef, which are both react's ref constants. one
+in an input and the other one in a </dialog>. We want to have a reference to both of those so we can use that hook to
+connect the virtual DOM in a more direct way to the virtual DOM that is being updated.
+
+We also have a useEffect hook that runs once on page load and checks if the inputRef.current exists and go ahead and focus
+on it.
